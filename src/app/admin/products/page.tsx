@@ -1,44 +1,41 @@
-"use client";
-
-import { useState } from 'react';
-import { Modal } from '@/components/ui/Modal';
+import { prisma } from '@/lib/prisma';
 import { Plus, Tag, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
-export default function ProductsPage() {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [products, setProducts] = useState([
-    { id: 'prd_1', name: 'Hand-poured Soy Candle', stock: 42, price: '$24.00', status: 'Active' },
-    { id: 'prd_2', name: 'Ceramic Coffee Mug', stock: 3, price: '$18.50', status: 'Low Stock' },
-    { id: 'prd_3', name: 'Linen Throw Blanket', stock: 15, price: '$89.00', status: 'Active' },
-    { id: 'prd_4', name: 'Organic Cotton Tee', stock: 0, price: '$35.00', status: 'Out of Stock' },
-  ]);
+export const dynamic = 'force-dynamic';
 
-  const handleAddProduct = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newProduct = {
-      id: `prd_${Date.now()}`,
-      name: formData.get('name') as string,
-      price: `$${formData.get('price')}`,
-      stock: parseInt(formData.get('stock') as string, 10),
-      status: 'Active',
-    };
+async function addProduct(formData: FormData) {
+  'use server';
 
-    setProducts([newProduct, ...products]);
-    setIsAddModalOpen(false);
-  };
+  const name = formData.get('name') as string;
+  const price = parseFloat(formData.get('price') as string);
+  const stock = parseInt(formData.get('stock') as string, 10);
+
+  if (!name || isNaN(price) || isNaN(stock)) return;
+
+  await prisma.product.create({
+    data: {
+      name,
+      price,
+      stock,
+      status: stock > 5 ? 'Active' : stock > 0 ? 'Low Stock' : 'Out of Stock'
+    }
+  });
+
+  revalidatePath('/admin/products');
+  redirect('/admin/products');
+}
+
+export default async function ProductsPage() {
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Products</h1>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors shadow-sm"
-        >
-          <Plus size={16} />
-          Add Product
-        </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -52,6 +49,13 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-slate-500">
+                  No products found. Add one below.
+                </td>
+              </tr>
+            ) : null}
             {products.map((product) => (
               <tr key={product.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer group">
                 <td className="p-4 font-medium text-slate-900 flex items-center gap-3">
@@ -61,7 +65,7 @@ export default function ProductsPage() {
                   {product.name}
                 </td>
                 <td className="p-4 text-slate-600">{product.stock} in stock</td>
-                <td className="p-4 font-medium text-slate-900">{product.price}</td>
+                <td className="p-4 font-medium text-slate-900">${product.price.toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex inline-flex items-center gap-1.5 ${
                     product.status === 'Active' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
@@ -78,12 +82,9 @@ export default function ProductsPage() {
         </table>
       </div>
 
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title="Add New Product"
-      >
-        <form id="add-product-form" onSubmit={handleAddProduct} className="space-y-5">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-8">
+        <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Add New Product</h2>
+        <form action={addProduct} className="space-y-5 max-w-lg">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">Product Name</label>
             <input
@@ -127,41 +128,16 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Tag size={16} className="text-slate-400" />
-              </div>
-              <select
-                name="category"
-                id="category"
-                className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow bg-white"
-              >
-                <option value="apparel">Apparel</option>
-                <option value="home">Home & Living</option>
-                <option value="accessories">Accessories</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-6">
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(false)}
-              className="px-5 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Cancel
-            </button>
+          <div className="pt-4 mt-6">
             <button
               type="submit"
-              className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-sm transition-colors"
+              className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2"
             >
-              Save Product
+              <Plus size={16} /> Save Product
             </button>
           </div>
         </form>
-      </Modal>
+      </div>
     </div>
   );
 }

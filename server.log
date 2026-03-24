@@ -2,11 +2,18 @@
 > mercatoo@0.1.0 dev
 > next dev
 
+⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
 ▲ Next.js 16.2.1 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.0.2:3000
-✓ Ready in 740ms
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.2:3001
+- Environments: .env
+✓ Ready in 683ms
+⨯ Another next dev server is already running.
 
-○ Compiling /admin ...
- GET /admin 200 in 7.3s (next.js: 6.4s, application-code: 940ms)
- GET /admin/builder 200 in 953ms (next.js: 906ms, application-code: 47ms)
+- Local:        http://localhost○ Compiling /admin/products ...
+ GET /admin/products 200 in 6.7s (next.js: 6.1s, application-code: 597ms)
+ GET /admin/products 200 in 86ms (next.js: 6ms, application-code: 81ms)
+ POST /admin/products 303 in 158ms (next.js: 13ms, application-code: 145ms)
+  └─ ƒ <inline action>({}) in 12ms src/admin/products/page.tsx
+ GET /admin/orders 200 in 1847ms (next.js: 1434ms, application-code: 413ms)
+ GET /admin/customers 200 in 921ms (next.js: 754ms, application-code: 167ms)

@@ -1,17 +1,22 @@
-export default function CustomersPage() {
-  const customers = [
-    { id: 'cus_1', name: 'Sarah Jenkins', email: 'sarah.j@example.com', orders: 4, spent: '$180.00' },
-    { id: 'cus_2', name: 'David Chen', email: 'david.c@example.com', orders: 1, spent: '$120.50' },
-    { id: 'cus_3', name: 'Emily Wright', email: 'emily.w@example.com', orders: 12, spent: '$850.25' },
-    { id: 'cus_4', name: 'Michael Scott', email: 'michael.s@example.com', orders: 2, spent: '$89.00' },
-  ];
+import { prisma } from '@/lib/prisma';
+import { Download } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+export default async function CustomersPage() {
+  const customers = await prisma.customer.findMany({
+    include: {
+      orders: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Customers</h1>
-        <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors shadow-sm">
-          Export List
+        <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+          <Download size={16} /> Export List
         </button>
       </div>
 
@@ -26,14 +31,23 @@ export default function CustomersPage() {
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer) => (
+            {customers.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-slate-500">
+                  No customers found.
+                </td>
+              </tr>
+            ) : null}
+            {customers.map((customer) => {
+              const totalSpent = customer.orders.reduce((sum, o) => sum + o.total, 0);
+              return (
               <tr key={customer.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer">
                 <td className="p-4 font-medium text-slate-900">{customer.name}</td>
                 <td className="p-4 text-slate-500">{customer.email}</td>
-                <td className="p-4 text-slate-600">{customer.orders}</td>
-                <td className="p-4 font-medium text-slate-900">{customer.spent}</td>
+                <td className="p-4 text-slate-600">{customer.orders.length}</td>
+                <td className="p-4 font-medium text-slate-900">${totalSpent.toFixed(2)}</td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
