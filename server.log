@@ -1,0 +1,12 @@
+
+> mercatoo@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 740ms
+
+○ Compiling /admin ...
+ GET /admin 200 in 7.3s (next.js: 6.4s, application-code: 940ms)
+ GET /admin/builder 200 in 953ms (next.js: 906ms, application-code: 47ms)

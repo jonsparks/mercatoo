@@ -37,6 +37,7 @@ export default function AdminLayout({
         </nav>
 
         <div className="mt-auto border-t border-slate-800 pt-4">
+          <NavItem href="/admin/builder" icon={<LayoutDashboard size={20} />} label="Store Builder" />
           <NavItem href="/admin/settings" icon={<Settings size={20} />} label="Settings" />
         </div>
       </aside>

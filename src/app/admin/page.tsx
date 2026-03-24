@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, ShoppingBag, DollarSign, Users, Target } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -9,10 +10,10 @@ export default function AdminDashboard() {
           <p className="text-slate-500">Here&apos;s what&apos;s happening in your store today.</p>
         </div>
         <div>
-          <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg flex items-center gap-2">
+          <Link href="/admin/builder" className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg flex items-center gap-2">
             Customize Storefront
             <Target size={18} />
-          </button>
+          </Link>
         </div>
       </div>
 
